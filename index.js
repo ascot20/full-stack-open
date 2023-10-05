@@ -38,6 +38,7 @@ function genId(){
 
 app.use(express.json())
 app.use(cors())
+app.use(express.static('dist'))
 
 app.get("/api/persons",(req,res)=>{
     res.json(phonebook)
@@ -81,7 +82,7 @@ app.post("/api/persons",(req,res)=>{
     }
 
     phonebook = phonebook.concat(person)
-    res.send(phonebook)
+    res.send(person)
 })
 
 app.delete('/api/persons/:id', (req, res) => {
