@@ -105,6 +105,17 @@ app.delete("/api/persons/:id", (req, res, next) => {
     });
 });
 
+app.put("/api/persons/:id",(req,res)=>{
+  const id = req.params.id
+  const updatedContact = req.body
+  console.log(updatedContact);
+  Contact.findByIdAndUpdate(id,updatedContact,{new:true}).then((result)=>{
+    res.json(result)
+  }).catch(err=>{
+    next(err);
+  })
+})
+
 app.use(unknownEndpoint)
 app.use(errorHandler);
 
