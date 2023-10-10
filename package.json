@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon index.js",
-    "build:ui": "rm -rf dist && cd ../part2b & npm run build && cp -r dist ../part3",
+    "build:ui": "rm -rf dist && cd ../part2b && npm run build && cp -r dist ../part3",
     "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && git push"
   },
   "author": "",

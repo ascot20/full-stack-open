@@ -4,15 +4,38 @@ const app = express();
 const cors = require("cors");
 const Contact = require("./model/phonebook");
 
+const requestLogger = (req, res, next) => {
+  console.log("Method:", req.method);
+  console.log("Path:  ", req.path);
+  console.log("Body:  ", req.body);
+  console.log("---");
+  next();
+};
+
+const errorHandler = (err, req, res, next) => {
+  console.error(err);
+
+  if (err.name === "CastError") {
+    res.status(400).send({ error: "malformatted id" });
+  }
+
+  next(err)
+};
+
+const unknownEndpoint = (req, res)=>{
+  res.status(404).send({error: "unknown endpoint"})
+}
 
 app.use(express.json());
 app.use(cors());
+app.use(requestLogger);
 app.use(express.static("dist"));
 
 app.get("/api/persons", (req, res) => {
   Contact.find({}).then((result) => {
     res.json(result);
   });
+
 });
 
 app.get("/info", (req, res) => {
@@ -26,18 +49,23 @@ app.get("/info", (req, res) => {
     });
 });
 
-app.get("/api/persons/:id", (req, res) => {
+app.get("/api/persons/:id", (req, res,next) => {
   const id = req.params.id;
-  Contact.find({ _id: id })
+  Contact.findById(id)
     .then((result) => {
-      res.json(result[0]);
+      if(result){
+        res.json(result);
+      }else{
+        res.status(404).end()
+      }
+      
     })
     .catch((err) => {
-      res.status(401).send(`<p>No Phonebook found</p>`);
+      next(err)
     });
 });
 
-app.post("/api/persons", (req, res) => {
+app.post("/api/persons", (req, res, next) => {
   if (!req.body.name) {
     return res.status(400).json({ error: "name is missing" });
   }
@@ -57,24 +85,28 @@ app.post("/api/persons", (req, res) => {
         contact
           .save()
           .then((result) => {
-            console.log(result);
             res.status(201).json(result);
           })
-          .catch((err) => {
-            res.status(400).json({ error: err });
-          });
       }
     })
     .catch((err) => {
-      res.status(400).json({ error: err });
+      next(err);
     });
 });
 
-app.delete("/api/persons/:id", (req, res) => {
-  const id = Number(req.params.id);
-  phonebook = phonebook.filter((person) => person.id !== id);
-  res.send(phonebook);
+app.delete("/api/persons/:id", (req, res, next) => {
+  const id = req.params.id
+  Contact.findByIdAndRemove(id)
+    .then((result) => {
+      res.status(204).end();
+    })
+    .catch((err) => {
+      next(err);
+    });
 });
+
+app.use(unknownEndpoint)
+app.use(errorHandler);
 
 const port = process.env.PORT || 3001;
 app.listen(port, () => {
