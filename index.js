@@ -4,6 +4,8 @@ const app = express();
 const cors = require("cors");
 const Contact = require("./model/phonebook");
 
+const date = new Date()
+
 const requestLogger = (req, res, next) => {
   console.log("Method:", req.method);
   console.log("Path:  ", req.path);
